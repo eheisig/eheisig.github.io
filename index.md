@@ -17,3 +17,5 @@
 | Pusha T                          | DAYTONA                        | 2018     | Album       | 9.5               | [Spotify](https://open.spotify.com/album/07bIdDDe3I3hhWpxU6tuBp?si=aTUJKXuvQwuAjZmEKq9mgw) |
 | Red Vox                          | Visions                        | 2022     | Album       | 7.5               | [Bandcamp](https://vine.bandcamp.com/album/visions)                                        |
 | Fall Out Boy                     | Folie à Deux                   | 2008     | Album       | Eval.             | [Spotify](https://open.spotify.com/album/6KOWjVP0mh5rOqmzm4tkPD?si=VS88iKhbTA2Lnbck9LVNAQ) |
+
+This work is licensed under the Creative Commons Attribution-ShareAlike 4.0 International License. To view a copy of this license, visit http://creativecommons.org/licenses/by-sa/4.0/ or send a letter to Creative Commons, PO Box 1866, Mountain View, CA 94042, USA.
