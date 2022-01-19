@@ -2,9 +2,9 @@
 
 ## Music
 
-[2021-12](https://raw.githubusercontent.com/eheisig/Vault/main/Effect/2012-12.html)
+[2021-12](Vault/Effect/2021-12.html)
 
-[2022-01](https://raw.githubusercontent.com/eheisig/Vault/main/Effect/2022_01.html)
+[2022-01](Vault/Effect/2022-01.html)
 
 | **Artist**                       | **Project**                    | **Year** | **Type**    | **Rating** (1-10) | **Link**                                                                                   |
 | -------------------------------- | ------------------------------ | -------- | ----------- | ----------------- | ------------------------------------------------------------------------------------------ |
