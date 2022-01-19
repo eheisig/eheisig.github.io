@@ -106,3 +106,11 @@ a.active *,
 	color: rgba(139, 233, 253, 1) !important;
 }
 
+font-face {
+  font-family: 'RobotoCondensed';
+  src: url(RobotoCondensed-Regular.ttf); 
+}
+div {
+  font-family: RobotoCondensed;
+}
+
