@@ -1,10 +1,18 @@
 # eheisig.com
 
-## Music
+## Browse
 
-[2021-12](Vault/Effect/2021-12.html)
+[Vault](https://eheisig.com/Vault)
 
-[2022-01](Vault/Effect/2022-01.html)
+WIP
+
+## Effect (Music)
+
+[2021-12](https://eheisig.com/Vault/Effect/2021-12.html)
+
+[2022-01](https://eheisig.com/Vault/Effect/2022-01.html)
+
+## 2022-01
 
 | **Artist**                       | **Project**                    | **Year** | **Type**    | **Rating** (1-10) | **Link**                                                                                   |
 | -------------------------------- | ------------------------------ | -------- | ----------- | ----------------- | ------------------------------------------------------------------------------------------ |
