@@ -1,1 +1,14 @@
-remote_theme: andrewbanchich/forty-jekyll-theme
+remote_theme: eheisig/forty-jekyll-theme
+
+title: eheisig.com
+
+markdown: kramdown
+
+sass:
+  style: compressed
+
+exclude:
+- "*.gemspec"
+- LICENSE.md
+- CONTRIBUTING.md
+- README.md 
