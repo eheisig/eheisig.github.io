@@ -1,31 +1,5 @@
 # eheisig.com
 
-## Browse
+Hi! Welcome to _eheisig.com_
 
-[Vault](/Vault)
-
-WIP
-
-## Effect (Music)
-
-[2021-12](/Vault/Effect/2021-12.html)
-
-[2022-01](/Vault/Effect/2022-01.html)
-
-## 2022-01
-
-| **Artist**                       | **Project**                    | **Year** | **Type**    | **Rating** (1-10) | **Link**                                                                                   |
-| -------------------------------- | ------------------------------ | -------- | ----------- | ----------------- | ------------------------------------------------------------------------------------------ |
-| 100 gecs                         | 100 gecs and The Tree of Clues | 2020     | Remix Album | 10                | [Spotify](https://open.spotify.com/album/0qnExDZfz0kVeBjixPsyjS?si=yIbyICP-SeqRex09ed_tZw) |
-| Lin-Manuel Miranda, Encanto Cast | Encanto                        | 2021     | Soundtrack  | 7.5               | [Spotify](https://open.spotify.com/album/25L8ck3KGcmCo3901ztPzR?si=C8tFA3KmTJ29d6VTjo_neg) |
-| Tee Grizzley                     | My Moment                      | 2017     | Mixtape     | 9                 | [Spotify](https://open.spotify.com/album/6074OsmUN1PdFgy0zTP4Fn?si=jXyLiW9vSgmL9TNe298Yvg) |
-| Billie Eilish                    | Happier Than Ever              | 2021     | Album       | 9.5               | [Spotify](https://open.spotify.com/album/0JGOiO34nwfUdDrD612dOp?si=knWIzQkRS520wzFIdRMiPQ) |
-| The Game, Kanye West             | Eazy                           | 2022     | Single      | 8.5               | [Spotify](https://open.spotify.com/track/6Ab81Bs9fcOwaTYuBsUUpI?si=a07758ba9c6c497f)       |
-| The Weeknd                       | Dawn FM                        | 2022     | Album       | 10                | [Spotify](https://open.spotify.com/album/2nLOHgzXzwFEpl62zAgCEC?si=nPhbWrADTtaQ1R8dKF87-A) |
-| Pusha T                          | DAYTONA                        | 2018     | Album       | 9.5               | [Spotify](https://open.spotify.com/album/07bIdDDe3I3hhWpxU6tuBp?si=aTUJKXuvQwuAjZmEKq9mgw) |
-| Red Vox                          | Visions                        | 2022     | Album       | 7.5               | [Bandcamp](https://vine.bandcamp.com/album/visions)                                        |
-| Fall Out Boy                     | Folie à Deux                   | 2008     | Album       | Eval.             | [Spotify](https://open.spotify.com/album/6KOWjVP0mh5rOqmzm4tkPD?si=VS88iKhbTA2Lnbck9LVNAQ) |
-
-Site theme is [dracula-css](https://github.com/gkroon/dracula-css) by [gkroon](https://github.com/gkroon), based off of the [dracula-theme](https://github.com/dracula/dracula-theme). These parts are licensed under the [MIT License](https://mit-license.org).
-
-This work is licensed under the Creative Commons Attribution-ShareAlike 4.0 International License. To view a copy of this license, visit [http://creativecommons.org/licenses/by-sa/4.0/](http://creativecommons.org/licenses/by-sa/4.0/) or send a letter to Creative Commons, PO Box 1866, Mountain View, CA 94042, USA.
+Enjoy your stay.
