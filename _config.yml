@@ -1,6 +1,7 @@
 remote_theme: eheisig/forty-jekyll-theme
 
 title: eheisig.com
+description: Enjoy your stay :)
 
 markdown: kramdown
 
