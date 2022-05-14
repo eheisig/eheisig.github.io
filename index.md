@@ -11,4 +11,4 @@
 
 Welcome! Enjoy your stay
 
-Contact me at site@eheisig.com
+Contact me at [site@eheisig.com](mailto:site@eheisig.com)
