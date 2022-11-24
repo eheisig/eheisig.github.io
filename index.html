@@ -4,12 +4,14 @@
             font-family: monospace
         }
     </style>
+    <script src="luxon.min.js">var DateTime = luxon.DateTime;
+    </script>
 </head>
 
 <body>
     <p>
         # eheisig.com #<br>
         <br>
-        Hi, I'm Em! This is my attempt at creating a personal website. :)
+        Happy <script>DateTime.now().toFormat('cccc');</script>, I'm Em! This is my attempt at creating a personal website. :)
     </p>
 </body>
