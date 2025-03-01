@@ -1,10 +1,10 @@
 Howdy! This is my personal website. My name is Emma Heisig, and I am a perennially busy college student.
 
-Additionally, you can check out some of my work on [my LinkedIn profile](nwww.linkedin.com/in/emmaheisig)
+Additionally, you can check out some of my work on [my LinkedIn profile](https://www.linkedin.com/in/emmaheisig).
 
 ---
 
-I use she/her pronouns! If you want to know more about it, here's [the link to a a great article](https://pronouns.org/what-and-why)!
+I use she/her pronouns! If you want to know more about pronouns, here's [the link to a great article](https://pronouns.org/what-and-why)!
 
 If you'd like to contact me, you can do so at [site@eheisig.com](mailto:site@eheisig.com)
 
