@@ -1,0 +1,683 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>[hidden]{display:none!important}body{margin:0}</style>
+<title>Quiet Cabin Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Barlow+Condensed:wght@600;700&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout concept: a boarding-pass style stepper. A sticky header holds the five lab steps (the real sequence of Worksheet 1: listen, data, model, ideas, exit), one task per screen, and every response is saved to a file at the end. */
+:root{
+  --scale:1;
+  --bg:#eef1f4; --surface:#ffffff; --surface-2:#e3e9ef; --ink:#14202b; --ink-2:#435567; --line:#bfc9d3;
+  --accent:#1d4f8c; --accent-ink:#ffffff; --rumble:#245f9e; --voices:#b0560c; --ok:#1c7447; --warn:#8a5a00; --bad:#a3271f; --focus:#d97a00;
+  --paper:#ffffff; --shadow:0 1px 2px rgba(20,32,43,.08),0 6px 18px rgba(20,32,43,.06);
+  --display:'Barlow Condensed','Arial Narrow',Arial,sans-serif; --body:'Atkinson Hyperlegible','Segoe UI',Verdana,sans-serif; --mono:'IBM Plex Mono',ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0e1822; --surface:#16232f; --surface-2:#1f303e; --ink:#e8eef4; --ink-2:#aab9c8; --line:#31465a;
+  --accent:#7db3ee; --accent-ink:#0e1822; --rumble:#7ab3ef; --voices:#f2a65d; --ok:#6fcf9b; --warn:#e8c06a; --bad:#ff9a92; --focus:#ffb454;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 6px 18px rgba(0,0,0,.25); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0e1822; --surface:#16232f; --surface-2:#1f303e; --ink:#e8eef4; --ink-2:#aab9c8; --line:#31465a;
+  --accent:#7db3ee; --accent-ink:#0e1822; --rumble:#7ab3ef; --voices:#f2a65d; --ok:#6fcf9b; --warn:#e8c06a; --bad:#ff9a92; --focus:#ffb454;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 6px 18px rgba(0,0,0,.25); color-scheme:dark}
+html{font-size:calc(100% * var(--scale))}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:1rem;line-height:1.55;padding-inline:16px;padding-block:0 32px}
+*{box-sizing:border-box}
+h1,h2,h3{font-family:var(--display);font-weight:700;letter-spacing:.01em;line-height:1.1;margin:0;text-wrap:balance}
+h2{font-size:2rem} h3{font-size:1.3rem;margin-block:1.2rem .4rem}
+p{margin:.4rem 0 .8rem;max-width:68ch}
+a{color:var(--accent)}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px;border-radius:4px}
+.wrap{max-width:60rem;margin-inline:auto}
+.skip{position:absolute;left:-999px;top:8px;background:var(--accent);color:var(--accent-ink);padding:8px 12px;border-radius:6px;z-index:20}
+.skip:focus{left:8px}
+/* header */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:10;background:var(--bg);padding-block:12px 8px;border-bottom:1px solid var(--line);margin-inline:-16px;padding-inline:16px}
+.top .wrap{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;justify-content:space-between}
+.brand{min-width:0}
+.brand .eyebrow{font-family:var(--mono);font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2)}
+.brand h1{font-size:1.9rem}
+.tools{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.btn{font:inherit;font-weight:700;border:2px solid var(--accent);background:var(--accent);color:var(--accent-ink);border-radius:8px;padding:.5rem .9rem;cursor:pointer;min-height:44px}
+.btn.ghost{background:transparent;color:var(--accent)}
+.btn.small{padding:.25rem .6rem;min-height:36px;font-size:.9rem}
+.btn[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.btn.ghost[aria-pressed="false"]{background:transparent;color:var(--accent)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.top .wrap.steps{display:block;margin-top:8px}
+.steps nav{min-width:0}
+.steps ol{list-style:none;margin:0;padding:0;display:flex;gap:6px;overflow-x:auto}
+.stepbtn{font:inherit;display:flex;gap:8px;align-items:center;white-space:nowrap;border:2px solid var(--line);background:var(--surface);color:var(--ink);border-radius:8px;padding:.35rem .7rem;cursor:pointer;min-height:44px}
+.stepbtn .n{font-family:var(--mono);font-size:.8rem;border:1.5px solid currentColor;border-radius:50%;width:1.6rem;height:1.6rem;display:grid;place-items:center}
+.stepbtn[aria-current="step"]{border-color:var(--accent);background:var(--accent);color:var(--accent-ink);font-weight:700}
+.stepbtn .done{display:none;font-size:.8rem}
+.stepbtn.is-done .done{display:inline}
+/* sections */
+main{padding-block:20px 8px;outline:none}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:20px;box-shadow:var(--shadow);margin-block:16px}
+.panel>h3:first-child{margin-top:0}
+.goal{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(min(15rem,100%),1fr))}
+.goal>div{border:1px solid var(--line);border-radius:10px;padding:12px 14px;background:var(--surface-2)}
+.goal b{display:block;font-family:var(--mono);font-size:.75rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);margin-bottom:4px}
+.note{border-left:5px solid var(--accent);background:var(--surface-2);padding:10px 14px;border-radius:0 8px 8px 0;margin-block:12px}
+.note.warn{border-color:var(--warn)}
+.row{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(min(17rem,100%),1fr))}
+.row>*{min-width:0}
+/* sound cards */
+.snd{border:2px solid var(--line);border-radius:12px;padding:14px;background:var(--surface)}
+.snd[data-s="rumble"]{border-top:8px solid var(--rumble)}
+.snd[data-s="voices"]{border-top:8px solid var(--voices)}
+.snd h3{margin:0 0 4px;font-family:var(--display);font-size:1.4rem}
+.snd .tag{font-family:var(--mono);font-size:.78rem;color:var(--ink-2)}
+.snd canvas{display:block;width:100%;height:auto;border-radius:8px;background:var(--surface-2);border:1px solid var(--line);margin-top:8px}
+.snd .lab{font-size:.8rem;color:var(--ink-2);margin-top:6px;font-family:var(--mono)}
+.snd details{margin-top:8px}
+.snd summary{cursor:pointer;font-weight:700}
+.lvl{display:flex;gap:10px;align-items:center;margin-top:8px;font-family:var(--mono);font-size:.9rem}
+.lvl .bar{flex:1;height:14px;border-radius:7px;background:var(--surface-2);border:1px solid var(--line);overflow:hidden}
+.lvl .bar i{display:block;height:100%;width:0;background:var(--rumble);transition:width .25s}
+.snd[data-s="voices"] .lvl .bar i{background:var(--voices)}
+.vol{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-block:12px}
+.vol input[type=range]{flex:1;min-width:min(10rem,100%);accent-color:var(--accent);min-height:32px}
+.switch{display:inline-flex;gap:10px;align-items:center;font-weight:700}
+.switch button{font:inherit;font-family:var(--mono);font-weight:700;min-width:7.5rem;min-height:44px;border-radius:22px;border:2px solid var(--accent);background:var(--surface);color:var(--ink);cursor:pointer;padding:0 14px}
+.switch button[aria-checked="true"]{background:var(--accent);color:var(--accent-ink)}
+/* forms */
+label,legend{font-weight:700}
+fieldset{border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:10px 0}
+textarea,input[type=text]{width:100%;font:inherit;color:var(--ink);background:var(--surface);border:2px solid var(--line);border-radius:8px;padding:.5rem .7rem}
+textarea{min-height:5.5rem;resize:vertical}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-block:6px}
+.chip{display:inline-flex}
+.chip input{position:absolute;opacity:0;width:1px;height:1px}
+.chip span{border:2px solid var(--line);background:var(--surface);border-radius:20px;padding:.3rem .9rem;cursor:pointer;min-height:40px;display:inline-flex;align-items:center;font-weight:400}
+.chip input:checked+span{border-color:var(--accent);background:var(--accent);color:var(--accent-ink);font-weight:700}
+.chip input:focus-visible+span{outline:3px solid var(--focus);outline-offset:2px}
+.starter{font:inherit;font-size:.85rem;border:1.5px dashed var(--ink-2);background:transparent;color:var(--ink);border-radius:16px;padding:.15rem .7rem;cursor:pointer;min-height:32px}
+table{border-collapse:collapse;width:100%}
+.tw{overflow-x:auto;max-width:100%;position:relative}
+.top{position:static}
+@media (min-width:600px) and (min-height:760px){.top{position:sticky}}
+html{scroll-padding-top:1rem}
+th,td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:middle}
+th{background:var(--surface-2);font-family:var(--display);font-size:1.05rem;letter-spacing:.02em}
+td.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+td input{width:7rem;font-family:var(--mono)}
+.fb{font-size:.9rem;min-height:1.3em;margin-top:4px}
+.fb.ok{color:var(--ok)} .fb.hint{color:var(--warn)}
+svg text{font-family:var(--body)}
+/* drawing */
+.tb{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-block:8px}
+.tb .sep{width:1px;height:28px;background:var(--line);margin-inline:4px}
+.sw{width:36px;height:36px;border-radius:50%;border:3px solid var(--line);cursor:pointer;padding:0}
+.sw[aria-pressed="true"]{border-color:var(--focus);box-shadow:0 0 0 2px var(--surface),0 0 0 4px var(--ink)}
+.paper{border:2px solid var(--ink-2);border-radius:8px;background:var(--paper);touch-action:none;display:block;width:100%;height:auto;cursor:crosshair}
+.prog{font-family:var(--mono);font-size:.85rem;color:var(--ink-2)}
+.probe{border-top:1px solid var(--line);padding-block:12px}
+.probe:first-of-type{border-top:0}
+.probe .opt{display:flex;gap:10px;align-items:flex-start;padding:6px 0;cursor:pointer}
+.probe .opt input{margin-top:.35rem;width:1.15rem;height:1.15rem;accent-color:var(--accent)}
+.nav{display:flex;justify-content:space-between;gap:12px;margin-block:8px 24px;flex-wrap:wrap}
+dialog{border:2px solid var(--accent);border-radius:12px;background:var(--surface);color:var(--ink);max-width:min(40rem,92vw);padding:18px}
+dialog::backdrop{background:rgba(0,0,0,.5)}
+.checklist{list-style:none;padding:0;margin:0;display:grid;gap:8px}
+.checklist li{display:flex;gap:10px;align-items:center;flex-wrap:wrap;border:1px solid var(--line);border-radius:8px;padding:8px 12px}
+.checklist .st{font-family:var(--mono);font-size:.8rem;border-radius:12px;padding:2px 10px;border:1.5px solid currentColor}
+.st.ok{color:var(--ok)} .st.no{color:var(--warn)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.preview img{max-width:100%;border:1px solid var(--line);border-radius:8px;background:#fff}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;scroll-behavior:auto!important}}
+@media (max-width:520px){h2{font-size:1.7rem}.panel{padding:14px}}
+</style>
+
+
+</head><body>
+<a class="skip" href="#main">Skip to the lab</a>
+<noscript><div style="background:#fff3cd;color:#3b2a00;border:2px solid #8a5a00;padding:12px 16px;margin:12px 0;border-radius:8px;font:16px/1.5 Arial,sans-serif"><strong>This lab needs JavaScript to run.</strong> If you opened this saved file from the Files app preview, it cannot work there. Open the lab link in Safari or Chrome instead, or open this file in a browser app.</div></noscript>
+<header class="top">
+  <div class="wrap">
+    <div class="brand">
+      <div class="eyebrow">Worksheet 1 · Interactive lab</div>
+      <h1>The Quiet Cabin</h1>
+    </div>
+    <div class="tools" role="group" aria-label="Display and help">
+      <button class="btn ghost small" id="sz1" aria-pressed="true" aria-label="Normal text size">A</button>
+      <button class="btn ghost small" id="sz2" aria-pressed="false" aria-label="Larger text size" style="font-size:1.1rem">A</button>
+      <button class="btn ghost small" id="sz3" aria-pressed="false" aria-label="Largest text size" style="font-size:1.3rem">A</button>
+      <button class="btn ghost small" id="bankBtn">Word bank</button>
+    </div>
+  </div>
+  <div class="wrap steps"><nav aria-label="Lab steps"><ol id="stepNav"></ol></nav></div>
+</header>
+
+<main id="main" tabindex="-1"><div class="wrap">
+
+<!-- STEP 0 -->
+<section class="step" data-step="0" aria-labelledby="h0">
+  <div class="panel">
+    <h2 id="h0" tabindex="-1">Why does the engine fade but not the voices?</h2>
+    <p>You are on a 6-hour flight. You switch on your noise-canceling headphones. The engine rumble gets much quieter, yet you can still hear the person next to you. In this lab you listen, read some sample data, sketch what you think is going on, and check some ideas. This replaces the paper Worksheet 1.</p>
+    <label for="nm">Your name</label>
+    <input type="text" id="nm" autocomplete="name" style="max-width:24rem">
+    <div class="goal" style="margin-top:16px">
+      <div><b>Goal (same for everyone)</b>Describe patterns in sound-level data and draw an initial model with questions that can be investigated.</div>
+      <div><b>No wrong answers yet</b>Your first model is a starting point. You will compare it with your final model near the end of the unit.</div>
+      <div><b>About 25 minutes</b>Listen and data about 10 minutes, model about 10, ideas check and exit about 5.</div>
+    </div>
+    <div class="note warn"><strong>Keep the volume low or medium.</strong> Stop any sound that is uncomfortable. Every sound also has a picture and a description, so you can do the whole lab without listening.</div>
+    <div class="note"><strong>Choices you have:</strong> larger text (top right), a word bank in English and Spanish, drawing or photo or words for your model, and voice typing from your device's keyboard in any text box.</div>
+    <details>
+      <summary>For teachers</summary>
+      <p>Matches Worksheet 1 Parts A to C and the exit ticket, for Lesson 1 (Engage). The two sounds are synthesized in the page, not recordings, so the voices are babble without words; use real clips if you have them. The noise-canceling switch in step 2 plays the sample data (a 16 dB drop for the rumble, a 1 dB drop for the voices); it is a model of the data, not real headphones, and it does not explain how canceling works. Answers stay in the student's browser while they work. Nothing is sent to you: students save a file at the end and turn it in the way you choose. The Wave Ideas Check shows no answers; use the saved files to sort misconceptions.</p>
+    </details>
+    <div class="nav" style="margin-bottom:0"><span></span><button class="btn" data-go="1">Start listening</button></div>
+  </div>
+</section>
+
+<!-- STEP 1 -->
+<section class="step" data-step="1" aria-labelledby="h1x" hidden>
+  <div class="panel">
+    <h2 id="h1x" tabindex="-1">Part A. Listen and observe</h2>
+    <p>Press Play on each sound. Watch the wave picture and the pitch bars as you listen. Then describe what you notice.</p>
+    <div class="vol"><label for="vol">Volume</label><input id="vol" type="range" min="0" max="100" value="35" aria-describedby="volnote"><span class="prog" id="volv">35</span></div>
+    <p id="volnote" class="prog">Your device volume also matters. Start low.</p>
+    <div class="row" id="players1"></div>
+  </div>
+  <div class="panel">
+    <h3>Question 1. Describe each sound you heard</h3>
+    <p>Pitch: low or high? Steady or changing? Anything else?</p>
+    <div class="row">
+      <fieldset><legend>Engine rumble</legend>
+        <div class="chips" role="radiogroup" aria-label="Rumble pitch"><label class="chip"><input type="radio" name="rp" value="low"><span>Low pitch</span></label><label class="chip"><input type="radio" name="rp" value="medium"><span>Medium</span></label><label class="chip"><input type="radio" name="rp" value="high"><span>High pitch</span></label></div>
+        <div class="chips" role="radiogroup" aria-label="Rumble pattern"><label class="chip"><input type="radio" name="rs" value="steady"><span>Steady</span></label><label class="chip"><input type="radio" name="rs" value="changing"><span>Changing</span></label></div>
+        <label for="rn">Anything else?</label><textarea id="rn" rows="2"></textarea>
+      </fieldset>
+      <fieldset><legend>Voices</legend>
+        <div class="chips" role="radiogroup" aria-label="Voices pitch"><label class="chip"><input type="radio" name="vp" value="low"><span>Low pitch</span></label><label class="chip"><input type="radio" name="vp" value="medium"><span>Medium</span></label><label class="chip"><input type="radio" name="vp" value="high"><span>High pitch</span></label></div>
+        <div class="chips" role="radiogroup" aria-label="Voices pattern"><label class="chip"><input type="radio" name="vs" value="steady"><span>Steady</span></label><label class="chip"><input type="radio" name="vs" value="changing"><span>Changing</span></label></div>
+        <label for="vn">Anything else?</label><textarea id="vn" rows="2"></textarea>
+      </fieldset>
+    </div>
+  </div>
+  <div class="nav"><button class="btn ghost" data-go="0">Back</button><button class="btn" data-go="2">Next: the data</button></div>
+</section>
+
+<!-- STEP 2 -->
+<section class="step" data-step="2" aria-labelledby="h2x" hidden>
+  <div class="panel">
+    <h2 id="h2x" tabindex="-1">Part A. The sample data</h2>
+    <p>This table shows sample sound levels at the ear on a flight. The data were made for class use. Fill in the last column.</p>
+    <div class="tw" tabindex="0" role="region" aria-label="Data table (scrolls sideways on small screens)"><table>
+      <caption class="sr">Sound level at the ear with noise canceling off and on</caption>
+      <thead><tr><th scope="col">Sound</th><th scope="col">Approx. frequency</th><th scope="col">Canceling OFF (dB)</th><th scope="col">Canceling ON (dB)</th><th scope="col">Change (dB)</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">Engine rumble</th><td class="num">about 100 Hz</td><td class="num">68</td><td class="num">52</td><td><label class="sr" for="c1">Change for engine rumble in decibels</label><input type="text" id="c1" inputmode="decimal" autocomplete="off"><div class="fb" id="f1" aria-live="polite"></div></td></tr>
+        <tr><th scope="row">Voices</th><td class="num">about 3,000 Hz</td><td class="num">66</td><td class="num">65</td><td><label class="sr" for="c2">Change for voices in decibels</label><input type="text" id="c2" inputmode="decimal" autocomplete="off"><div class="fb" id="f2" aria-live="polite"></div></td></tr>
+      </tbody></table></div>
+    <p class="prog">Change = ON minus OFF. A level going down gives a negative number.</p>
+    <svg id="dumb" role="img" width="100%" viewBox="0 0 640 200" aria-labelledby="dumbT dumbD"></svg>
+  </div>
+  <div class="panel">
+    <h3>Hear the data</h3>
+    <p>Play a sound, then switch noise canceling on and off. The switch changes the sound by the amounts in the table. It is a model of the data, not a real headphone.</p>
+    <div class="switch" role="group" aria-label="Noise canceling"><span id="ccl">Noise canceling</span><button id="cc" role="switch" aria-checked="false" aria-labelledby="ccl">OFF</button></div>
+    <div class="row" id="players2" style="margin-top:12px"></div>
+  </div>
+  <div class="panel">
+    <h3>Question 2. What patterns do you notice in the table?</h3>
+    <div class="chips" aria-label="Sentence starters"><button class="starter" data-into="q2" data-t="I notice that ">I notice that…</button><button class="starter" data-into="q2" data-t="The biggest change is ">The biggest change is…</button><button class="starter" data-into="q2" data-t="Something that stays about the same is ">Something that stays about the same is…</button></div>
+    <label class="sr" for="q2">Patterns in the table</label><textarea id="q2" rows="4"></textarea>
+  </div>
+  <div class="nav"><button class="btn ghost" data-go="1">Back</button><button class="btn" data-go="3">Next: my model</button></div>
+</section>
+
+<!-- STEP 3 -->
+<section class="step" data-step="3" aria-labelledby="h3x" hidden>
+  <div class="panel">
+    <h2 id="h3x" tabindex="-1">Part B. Anchor Model v1</h2>
+    <p>Draw what you think happens to the engine rumble between the engine and your ear when noise canceling is <strong>ON</strong>. Include the headphone, the sound, and anything you think is inside. Use arrows and labels. There is no wrong answer yet. Keep this: you will compare it with your final model.</p>
+    <div class="tb" role="toolbar" aria-label="Drawing tools">
+      <button class="btn small" data-tool="pen" aria-pressed="true">Pen</button>
+      <button class="btn ghost small" data-tool="arrow" aria-pressed="false">Arrow</button>
+      <button class="btn ghost small" data-tool="eraser" aria-pressed="false">Eraser</button>
+      <button class="btn ghost small" data-tool="text" aria-pressed="false">Label</button>
+      <span class="sep"></span>
+      <span id="sws"></span>
+      <span class="sep"></span>
+      <button class="btn ghost small" id="undo">Undo</button>
+      <button class="btn ghost small" id="clear">Clear</button>
+    </div>
+    <div class="tb" role="toolbar" aria-label="Stamps">
+      <span class="prog">Stamps:</span>
+      <button class="btn ghost small" data-stamp="engine" aria-pressed="false">Engine</button>
+      <button class="btn ghost small" data-stamp="headphone" aria-pressed="false">Headphone</button>
+      <button class="btn ghost small" data-stamp="ear" aria-pressed="false">Ear</button>
+      <button class="btn ghost small" data-stamp="mic" aria-pressed="false">Microphone</button>
+      <button class="btn ghost small" data-stamp="speaker" aria-pressed="false">Speaker</button>
+      <button class="btn ghost small" data-stamp="wave" aria-pressed="false">Wave</button>
+    </div>
+    <div class="tb" id="labelRow" hidden><label for="lbl">Label text</label><input type="text" id="lbl" style="max-width:18rem" placeholder="Type, then click the drawing"></div>
+    <canvas id="cv" class="paper" width="800" height="450" role="img" aria-label="Drawing area for Anchor Model v1. You can also describe your model in words below, or add a photo of a paper drawing."></canvas>
+    <div class="tb">
+      <label class="btn ghost small" for="photo" style="display:inline-flex;align-items:center">Add a photo of a paper drawing</label>
+      <input type="file" id="photo" accept="image/*" class="sr">
+      <span class="prog" id="cvstat" aria-live="polite">Tool: pen</span>
+    </div>
+    <div class="note"><strong>Or describe it in words.</strong> You can use words instead of, or along with, the drawing. What starts at the engine? What happens at the headphone? What reaches your ear?
+      <label class="sr" for="mdesc">Describe your model in words</label><textarea id="mdesc" rows="3"></textarea></div>
+  </div>
+  <div class="panel">
+    <h3>Question 3. My best explanation so far (2 to 3 sentences)</h3>
+    <div class="chips"><button class="starter" data-into="q3" data-t="I think the headphone ">I think the headphone…</button><button class="starter" data-into="q3" data-t="This would explain the data because ">This would explain the data because…</button></div>
+    <label class="sr" for="q3">My best explanation</label><textarea id="q3" rows="4"></textarea>
+    <h3>Question 4. What am I unsure about? What would I need to find out?</h3>
+    <div class="chips"><button class="starter" data-into="q4" data-t="I am not sure ">I am not sure…</button><button class="starter" data-into="q4" data-t="I wonder ">I wonder…</button></div>
+    <label class="sr" for="q4">What I am unsure about</label><textarea id="q4" rows="3"></textarea>
+  </div>
+  <div class="nav"><button class="btn ghost" data-go="2">Back</button><button class="btn" data-go="4">Next: ideas check</button></div>
+</section>
+
+<!-- STEP 4 -->
+<section class="step" data-step="4" aria-labelledby="h4x" hidden>
+  <div class="panel">
+    <h2 id="h4x" tabindex="-1">Part C. Wave Ideas Check</h2>
+    <p>Choose one answer for each and explain your thinking in a sentence. This helps your teacher plan the unit. It is not graded and answers are not shown now. We will come back to these ideas.</p>
+    <p class="prog" id="pcount" aria-live="polite">0 of 6 answered</p>
+    <div id="probes"></div>
+  </div>
+  <div class="nav"><button class="btn ghost" data-go="3">Back</button><button class="btn" data-go="5">Next: exit ticket</button></div>
+</section>
+
+<!-- STEP 5 -->
+<section class="step" data-step="5" aria-labelledby="h5x" hidden>
+  <div class="panel">
+    <h2 id="h5x" tabindex="-1">Exit ticket</h2>
+    <h3 style="margin-top:.4rem">Write two questions you would need answered to explain the headphone data.</h3>
+    <label for="e1">Question 1</label><input type="text" id="e1">
+    <label for="e2" style="display:block;margin-top:10px">Question 2</label><input type="text" id="e2">
+  </div>
+  <div class="panel">
+    <h3 style="margin-top:0">Check-in</h3>
+    <fieldset><legend>I can describe patterns in the data and draw a first model.</legend>
+      <div class="chips" role="radiogroup"><label class="chip"><input type="radio" name="got" value="Got it"><span>Got it</span></label><label class="chip"><input type="radio" name="got" value="Almost"><span>Almost</span></label><label class="chip"><input type="radio" name="got" value="Not yet"><span>Not yet</span></label></div></fieldset>
+    <fieldset><legend>How I am feeling about this work</legend>
+      <div class="chips" role="radiogroup"><label class="chip"><input type="radio" name="feel" value="Calm"><span>Calm</span></label><label class="chip"><input type="radio" name="feel" value="Curious"><span>Curious</span></label><label class="chip"><input type="radio" name="feel" value="Stuck"><span>Stuck</span></label><label class="chip"><input type="radio" name="feel" value="Frustrated"><span>Frustrated</span></label></div></fieldset>
+    <label for="barrier">Was anything in the way (language, tools, noise, time)? What would help?</label><textarea id="barrier" rows="2"></textarea>
+  </div>
+  <div class="nav"><button class="btn ghost" data-go="4">Back</button><button class="btn" data-go="6">Review and save</button></div>
+</section>
+
+<!-- STEP 6 -->
+<section class="step" data-step="6" aria-labelledby="h6x" hidden>
+  <div class="panel">
+    <h2 id="h6x" tabindex="-1">Review and save</h2>
+    <p>Check that each part is done. You can go back to any part. When you are ready, save your worksheet and turn it in the way your teacher asks.</p>
+    <ul class="checklist" id="check"></ul>
+  </div>
+  <div class="panel">
+    <h3 style="margin-top:0">Save your work</h3>
+    <div class="tb">
+      <button class="btn" id="saveHtml">Save worksheet (.html)</button>
+      <button class="btn ghost" id="saveTxt">Save as text (.txt)</button>
+      <button class="btn ghost" id="savePng">Save my drawing (.png)</button>
+      <button class="btn ghost" id="copyTxt">Copy text</button>
+    </div>
+    <div class="fb" id="savefb" aria-live="polite"></div>
+    <div id="copyFallback" hidden><label for="cpbox">Select all and copy this text:</label><textarea id="cpbox" rows="8" readonly></textarea></div>
+    <p class="prog">Your answers stay on this device while you work, if your browser allows it. Nothing is sent anywhere.</p>
+    <details class="preview"><summary>Preview of my drawing</summary><img id="pimg" alt="Your drawing of Anchor Model v1" width="400" height="225"></details>
+    <div class="tb" style="margin-top:14px"><button class="btn ghost small" id="reset">Start over</button><span class="fb hint" id="resetfb" aria-live="polite"></span></div>
+  </div>
+  <div class="nav"><button class="btn ghost" data-go="5">Back</button><span></span></div>
+</section>
+
+</div></main>
+
+<dialog id="bank" aria-labelledby="bankT">
+  <h3 id="bankT" style="margin-top:0">Word bank</h3>
+  <div class="tw" tabindex="0" role="region" aria-label="Data table (scrolls sideways on small screens)"><table>
+    <thead><tr><th scope="col">English</th><th scope="col">Español</th><th scope="col">In plain words</th></tr></thead>
+    <tbody>
+      <tr><td>noise</td><td>ruido</td><td>unwanted sound</td></tr>
+      <tr><td>wave</td><td>onda</td><td>a disturbance that carries energy from place to place</td></tr>
+      <tr><td>pitch</td><td>tono</td><td>how high or low a sound is</td></tr>
+      <tr><td>frequency</td><td>frecuencia</td><td>repeats per second, measured in Hz</td></tr>
+      <tr><td>decibel (dB)</td><td>decibelio (dB)</td><td>unit for how loud a sound is</td></tr>
+      <tr><td>microphone</td><td>micrófono</td><td>picks up sound</td></tr>
+      <tr><td>speaker</td><td>altavoz</td><td>makes sound</td></tr>
+      <tr><td>cancel</td><td>cancelar</td><td>make smaller or remove</td></tr>
+      <tr><td>model</td><td>modelo</td><td>a drawing or idea that explains how something works</td></tr>
+    </tbody></table></div>
+  <p class="prog">Spanish terms should be checked by a Spanish speaker. Ask your teacher to add your language.</p>
+  <button class="btn" id="bankClose">Close</button>
+</dialog>
+
+<script>
+(function(){
+'use strict';
+/* ---------- state + storage ---------- */
+var KEY='ph5-ws1-quiet-cabin-v1';
+var S={name:'',size:1,step:0,rp:'',rs:'',rn:'',vp:'',vs:'',vn:'',c1:'',c2:'',q2:'',mdesc:'',q3:'',q4:'',probes:[{},{},{},{},{},{}],e1:'',e2:'',got:'',feel:'',barrier:'',draw:'',drawn:false};
+function load(){try{var t=localStorage.getItem(KEY);if(t){var o=JSON.parse(t);for(var k in o){if(k in S)S[k]=o[k];}}}catch(e){}}
+var saveT=null;
+function save(){clearTimeout(saveT);saveT=setTimeout(function(){try{S.draw=cv.toDataURL('image/png');}catch(e){}try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}},500);}
+function $(s,r){return (r||document).querySelector(s);} function $$(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s));}
+
+/* ---------- steps ---------- */
+var NAMES=['Start','Listen','Data','Model','Ideas','Exit','Save'];
+var nav=$('#stepNav');
+NAMES.forEach(function(n,i){var li=document.createElement('li');li.innerHTML='<button class="stepbtn" data-go="'+i+'"><span class="n">'+(i===0?'•':i)+'</span><span>'+n+'</span><span class="done" aria-hidden="true">✓</span></button>';nav.appendChild(li);});
+function go(i,focus){
+  S.step=i;
+  $$('.step').forEach(function(s){s.hidden=(+s.getAttribute('data-step')!==i);});
+  $$('.stepbtn').forEach(function(b){var j=+b.getAttribute('data-go');if(j===i){b.setAttribute('aria-current','step');try{b.scrollIntoView({inline:'center',block:'nearest'});}catch(e){}}else b.removeAttribute('aria-current');});
+  stopAllSounds();
+  refreshDone(); if(i===6)renderCheck();
+  var h=$('.step[data-step="'+i+'"] h2');
+  window.scrollTo(0,0);
+  if(h&&focus!==false){h.focus({preventScroll:true});}
+  save();
+}
+document.addEventListener('click',function(e){var b=e.target.closest('[data-go]');if(b){go(+b.getAttribute('data-go'));}});
+
+/* ---------- text size + word bank ---------- */
+function setSize(n){S.size=n;document.documentElement.style.setProperty('--scale',[1,1.15,1.3][n-1]);[1,2,3].forEach(function(k){$('#sz'+k).setAttribute('aria-pressed',k===n?'true':'false');});save();}
+[1,2,3].forEach(function(k){$('#sz'+k).addEventListener('click',function(){setSize(k);});});
+$('#bankBtn').addEventListener('click',function(){var d=$('#bank');if(d.showModal){d.showModal();}else{d.setAttribute('open','');}});
+$('#bankClose').addEventListener('click',function(){var d=$('#bank');if(d.close){d.close();}else{d.removeAttribute('open');}});
+
+/* ---------- audio engine ---------- */
+var AC=window.AudioContext||window.webkitAudioContext, ctx=null, master=null, ccOn=false;
+var CC_DB={rumble:-16,voices:-1};
+var LEVEL={rumble:[68,52],voices:[66,65]};
+function volGain(){var v=+$('#vol').value/100;return Math.min(0.5,Math.pow(v,1.5)*0.5);}
+function ensure(){
+  if(!AC)return false;
+  if(!ctx){ctx=new AC();master=ctx.createGain();master.gain.value=volGain();master.connect(ctx.destination);}
+  if(ctx.state==='suspended'){ctx.resume();}
+  return true;
+}
+function brown(sec){var n=Math.floor(ctx.sampleRate*sec),b=ctx.createBuffer(1,n,ctx.sampleRate),d=b.getChannelData(0),last=0;for(var i=0;i<n;i++){var w=Math.random()*2-1;last=(last+0.02*w)/1.02;d[i]=last*3.5;}return b;}
+function white(sec){var n=Math.floor(ctx.sampleRate*sec),b=ctx.createBuffer(1,n,ctx.sampleRate),d=b.getChannelData(0);for(var i=0;i<n;i++)d[i]=Math.random()*2-1;return b;}
+var SND={};
+function makeRumble(){
+  var out=ctx.createGain(),cc=ctx.createGain(),an=ctx.createAnalyser();an.fftSize=2048;an.smoothingTimeConstant=0.6;
+  var src=ctx.createBufferSource();src.buffer=brown(3);src.loop=true;
+  var lp=ctx.createBiquadFilter();lp.type='lowpass';lp.frequency.value=170;lp.Q.value=0.7;var gn=ctx.createGain();gn.gain.value=0.5;
+  src.connect(lp);lp.connect(gn);gn.connect(out);
+  var oscs=[[50,0.10],[100,0.30],[200,0.09]].map(function(p){var o=ctx.createOscillator();o.type='sine';o.frequency.value=p[0];var g=ctx.createGain();g.gain.value=p[1];o.connect(g);g.connect(out);return o;});
+  out.gain.value=0.7;out.connect(cc);cc.connect(an);an.connect(master);
+  src.start();oscs.forEach(function(o){o.start();});
+  return {cc:cc,an:an,stop:function(){try{src.stop();}catch(e){}oscs.forEach(function(o){try{o.stop();}catch(e){}});try{out.disconnect();cc.disconnect();an.disconnect();}catch(e){}}};
+}
+var VOW=[[700,1200,2600],[400,2000,2800],[300,900,2400],[500,1500,2500],[800,1300,2700]];
+function makeVoices(){
+  var out=ctx.createGain(),cc=ctx.createGain(),an=ctx.createAnalyser();an.fftSize=2048;an.smoothingTimeConstant=0.6;
+  var osc=ctx.createOscillator();osc.type='sawtooth';osc.frequency.value=140;
+  var env=ctx.createGain();env.gain.value=0;
+  var fs=[0,1,2,3].map(function(i){var f=ctx.createBiquadFilter();f.type='bandpass';f.frequency.value=[700,1200,2600,3200][i];f.Q.value=[7,8,9,6][i];var g=ctx.createGain();g.gain.value=[1,0.8,0.6,0.5][i];osc.connect(f);f.connect(g);g.connect(env);return f;});
+  var nz=ctx.createBufferSource();nz.buffer=white(2);nz.loop=true;var hp=ctx.createBiquadFilter();hp.type='bandpass';hp.frequency.value=3200;hp.Q.value=1.2;var ng=ctx.createGain();ng.gain.value=0;nz.connect(hp);hp.connect(ng);ng.connect(out);
+  env.connect(out);out.gain.value=0.5;out.connect(cc);cc.connect(an);an.connect(master);
+  osc.start();nz.start();
+  var alive=true,tm=null;
+  function syl(){
+    if(!alive)return;var t=ctx.currentTime,pause=Math.random()<0.22;
+    if(pause){env.gain.setTargetAtTime(0,t,0.03);tm=setTimeout(syl,300+Math.random()*350);return;}
+    var v=VOW[Math.floor(Math.random()*VOW.length)];
+    for(var i=0;i<3;i++)fs[i].frequency.setTargetAtTime(v[i],t,0.04);
+    fs[3].frequency.setTargetAtTime(3000+Math.random()*500,t,0.04);
+    osc.frequency.setTargetAtTime(105+Math.random()*100,t,0.06);
+    var lvl=0.55+Math.random()*0.45;
+    env.gain.cancelScheduledValues(t);env.gain.setTargetAtTime(lvl,t,0.015);
+    if(Math.random()<0.35){ng.gain.setValueAtTime(0.18,t);ng.gain.setTargetAtTime(0,t+0.07,0.03);}
+    var d=160+Math.random()*180;env.gain.setTargetAtTime(0.05,t+d/1000,0.03);
+    tm=setTimeout(syl,d+60+Math.random()*80);
+  }
+  syl();
+  return {cc:cc,an:an,stop:function(){alive=false;clearTimeout(tm);try{osc.stop();nz.stop();}catch(e){}try{out.disconnect();cc.disconnect();an.disconnect();env.disconnect();}catch(e){}}};
+}
+function ccTarget(id){return ccOn?Math.pow(10,CC_DB[id]/20):1;}
+function play(id){
+  if(!ensure()){return false;}
+  master.gain.setTargetAtTime(volGain(),ctx.currentTime,0.02);
+  if(SND[id])return true;
+  var s=id==='rumble'?makeRumble():makeVoices();
+  s.cc.gain.value=ccTarget(id);SND[id]=s;return true;
+}
+function stopSound(id){if(SND[id]){SND[id].stop();delete SND[id];}}
+function stopAllSounds(){['rumble','voices'].forEach(stopSound);syncPlayers();}
+function setCC(on){ccOn=on;var b=$('#cc');b.setAttribute('aria-checked',on?'true':'false');b.textContent=on?'ON':'OFF';['rumble','voices'].forEach(function(id){if(SND[id])SND[id].cc.gain.setTargetAtTime(ccTarget(id),ctx.currentTime,0.05);});syncPlayers();}
+$('#cc').addEventListener('click',function(){setCC(!ccOn);});
+$('#vol').addEventListener('input',function(){$('#volv').textContent=this.value;if(master)master.gain.setTargetAtTime(volGain(),ctx.currentTime,0.02);});
+
+/* ---------- player cards ---------- */
+var DESC={
+  rumble:{title:'Engine rumble',tag:'steady low hum · about 100 Hz',txt:'Audio description: a steady, low, continuous hum like a large fan. It does not change in loudness or pitch. On the wave picture the main wave repeats about 100 times each second, with a little roughness. Put a hand on your device speaker to feel a steady buzz.'},
+  voices:{title:'Voices',tag:'changing higher babble · about 3,000 Hz',txt:'Audio description: synthetic voice-like sounds made for this lab, with no words. The pitch rises and falls, the sound starts and stops, with short pauses and some hissing "s" sounds. Most of its energy is higher than the rumble.'}
+};
+var players=[];
+function buildPlayers(host,showLevel){
+  ['rumble','voices'].forEach(function(id){
+    var d=DESC[id],el=document.createElement('div');el.className='snd';el.setAttribute('data-s',id);
+    el.innerHTML='<h3>'+d.title+'</h3><div class="tag">'+d.tag+'</div>'+
+      '<div class="tb"><button class="btn small play" aria-pressed="false">Play '+d.title.toLowerCase()+'</button></div>'+
+      '<canvas class="wv" width="480" height="120" role="img" aria-label="Wave picture of the '+d.title.toLowerCase()+' as it plays"></canvas><div class="lab">wave picture (time →)</div>'+
+      '<canvas class="sp" width="480" height="90" role="img" aria-label="Pitch bars for the '+d.title.toLowerCase()+', low pitches on the left"></canvas><div class="lab">pitch bars: 50 Hz ← → 6,000 Hz</div>'+
+      (showLevel?'<div class="lvl"><span class="lv">Level: —</span><span class="bar" aria-hidden="true"><i></i></span></div>':'')+
+      '<details open><summary>Describe this sound</summary><p>'+d.txt+'</p></details>';
+    host.appendChild(el);
+    var p={id:id,el:el,wv:$('.wv',el),sp:$('.sp',el),btn:$('.play',el),lv:$('.lv',el),bar:$('.bar i',el),showLevel:showLevel};
+    p.btn.addEventListener('click',function(){if(SND[id]){stopSound(id);}else{if(!play(id)){p.btn.textContent='Audio not available. Use the pictures and descriptions.';p.btn.disabled=true;}}syncPlayers();});
+    players.push(p);
+  });
+}
+function syncPlayers(){players.forEach(function(p){var on=!!SND[p.id];p.btn.setAttribute('aria-pressed',on?'true':'false');p.btn.textContent=(on?'Stop ':'Play ')+DESC[p.id].title.toLowerCase();});}
+function cssv(n){return getComputedStyle(document.documentElement).getPropertyValue(n).trim();}
+function frame(){
+  players.forEach(function(p){
+    if(p.el.offsetParent===null)return;
+    var s=SND[p.id],color=cssv(p.id==='rumble'?'--rumble':'--voices'),sf=cssv('--surface-2'),ink=cssv('--ink-2');
+    var c=p.wv.getContext('2d'),w=p.wv.width,h=p.wv.height;c.clearRect(0,0,w,h);
+    c.strokeStyle=ink;c.globalAlpha=.4;c.lineWidth=1;c.beginPath();c.moveTo(0,h/2);c.lineTo(w,h/2);c.stroke();c.globalAlpha=1;
+    c.strokeStyle=color;c.lineWidth=2.5;c.beginPath();
+    var lvl=0;
+    if(s){var buf=new Uint8Array(s.an.fftSize);s.an.getByteTimeDomainData(buf);var step=Math.floor(buf.length/w*1)||1;for(var x=0;x<w;x++){var v=(buf[Math.min(buf.length-1,x*step)]-128)/128;if(Math.abs(v)>lvl)lvl=Math.abs(v);var y=h/2-v*h*0.9*1.4;if(x===0)c.moveTo(x,y);else c.lineTo(x,y);}}else{c.moveTo(0,h/2);c.lineTo(w,h/2);}
+    c.stroke();
+    var c2=p.sp.getContext('2d'),w2=p.sp.width,h2=p.sp.height;c2.clearRect(0,0,w2,h2);
+    var bands=48,lo=50,hi=6000,bw=w2/bands;
+    if(s&&ctx){var fb=new Uint8Array(s.an.frequencyBinCount),nyq=ctx.sampleRate/2;s.an.getByteFrequencyData(fb);c2.fillStyle=color;
+      for(var b=0;b<bands;b++){var f0=lo*Math.pow(hi/lo,b/bands),f1=lo*Math.pow(hi/lo,(b+1)/bands),i0=Math.floor(f0/nyq*fb.length),i1=Math.max(i0+1,Math.floor(f1/nyq*fb.length)),m=0;for(var i=i0;i<i1&&i<fb.length;i++)if(fb[i]>m)m=fb[i];var bh=m/255*(h2-16);c2.fillRect(b*bw+1,h2-14-bh,bw-2,bh);}}
+    c2.fillStyle=ink;c2.font='11px sans-serif';[100,1000,3000].forEach(function(f){var x=Math.log(f/lo)/Math.log(hi/lo)*w2;c2.fillRect(x,h2-14,1,5);c2.fillText(f>=1000?(f/1000)+' kHz':f+' Hz',Math.min(w2-44,Math.max(0,x-14)),h2-2);});
+    if(p.showLevel){if(s){var L=LEVEL[p.id][ccOn?1:0];p.lv.textContent='Sample level: '+L+' dB';p.bar.style.width=Math.max(4,Math.min(100,(L-40)/30*100))+'%';}else{p.lv.textContent='Level: —';p.bar.style.width='0';}}
+  });
+  requestAnimationFrame(frame);
+}
+buildPlayers($('#players1'),false);buildPlayers($('#players2'),true);
+requestAnimationFrame(frame);
+
+/* ---------- data chart ---------- */
+function drawDumb(){
+  var svg=$('#dumb'),W=640,x0=150,x1=600,lo=40,hi=70;function X(v){return x0+(v-lo)/(hi-lo)*(x1-x0);}
+  var h='<title id="dumbT">Sound level with noise canceling off and on</title><desc id="dumbD">Engine rumble: 68 dB off, 52 dB on. Voices: 66 dB off, 65 dB on. The axis starts at 40 dB.</desc>';
+  for(var v=lo;v<=hi;v+=10){h+='<line x1="'+X(v)+'" y1="20" x2="'+X(v)+'" y2="150" stroke="var(--line)"/><text x="'+X(v)+'" y="172" text-anchor="middle" font-size="13" fill="var(--ink-2)">'+v+'</text>';}
+  h+='<text x="'+((x0+x1)/2)+'" y="194" text-anchor="middle" font-size="13" fill="var(--ink-2)">Sound level (dB). The axis starts at 40 dB so small changes can be seen.</text>';
+  [['Engine rumble',68,52,'var(--rumble)',55],['Voices',66,65,'var(--voices)',115]].forEach(function(r){
+    h+='<text x="10" y="'+(r[4]+5)+'" font-size="15" font-weight="700" fill="var(--ink)">'+r[0]+'</text>';
+    h+='<line x1="'+X(r[2])+'" y1="'+r[4]+'" x2="'+X(r[1])+'" y2="'+r[4]+'" stroke="'+r[3]+'" stroke-width="4"/>';
+    h+='<circle cx="'+X(r[1])+'" cy="'+r[4]+'" r="9" fill="var(--surface)" stroke="'+r[3]+'" stroke-width="3"/>';
+    h+='<rect x="'+(X(r[2])-8)+'" y="'+(r[4]-8)+'" width="16" height="16" fill="'+r[3]+'"/>';
+    h+='<text x="'+X(r[1])+'" y="'+(r[4]-16)+'" text-anchor="middle" font-size="13" fill="var(--ink)">OFF '+r[1]+'</text>';
+    h+='<text x="'+X(r[2])+'" y="'+(r[4]+28)+'" text-anchor="middle" font-size="13" fill="var(--ink)">ON '+r[2]+'</text>';
+  });
+  svg.innerHTML=h;
+}
+drawDumb();
+function checkChange(inp,fb,exp){
+  var raw=inp.value.replace(/[−–—]/g,'-').replace(/\s*dB/i,'').trim();
+  if(!raw){fb.textContent='';fb.className='fb';return;}
+  var n=parseFloat(raw);
+  if(isNaN(n)){fb.textContent='Enter a number, like -5.';fb.className='fb hint';return;}
+  if(n===exp){fb.textContent='Matches the data.';fb.className='fb ok';}
+  else if(n===-exp){fb.textContent='Check the sign. Did the level go up or down with canceling ON?';fb.className='fb hint';}
+  else{fb.textContent='Not quite. Subtract: ON minus OFF.';fb.className='fb hint';}
+}
+
+/* ---------- simple bound fields ---------- */
+var FIELDS={nm:'name',rn:'rn',vn:'vn',c1:'c1',c2:'c2',q2:'q2',mdesc:'mdesc',q3:'q3',q4:'q4',e1:'e1',e2:'e2',barrier:'barrier'};
+function bind(){
+  Object.keys(FIELDS).forEach(function(id){var el=$('#'+id),k=FIELDS[id];el.value=S[k]||'';el.addEventListener('input',function(){S[k]=el.value;if(id==='c1')checkChange(el,$('#f1'),-16);if(id==='c2')checkChange(el,$('#f2'),-1);refreshDone();save();});});
+  checkChange($('#c1'),$('#f1'),-16);checkChange($('#c2'),$('#f2'),-1);
+  [['rp','rp'],['rs','rs'],['vp','vp'],['vs','vs'],['got','got'],['feel','feel']].forEach(function(p){
+    $$('input[name="'+p[0]+'"]').forEach(function(r){if(S[p[1]]===r.value)r.checked=true;r.addEventListener('change',function(){S[p[1]]=r.value;refreshDone();save();});});});
+  $$('.starter').forEach(function(b){b.addEventListener('click',function(){var t=$('#'+b.getAttribute('data-into'));t.value=(t.value?t.value+(/\s$/.test(t.value)?'':' '):'')+b.getAttribute('data-t');t.focus();S[FIELDS[t.id]]=t.value;save();});});
+}
+
+/* ---------- probes ---------- */
+var PROBES=[
+ ['You pluck a guitar string and hear it across the room. Which best describes what travels from the guitar to your ear?',['Air molecules travel from the guitar all the way to your ear.','Air molecules vibrate back and forth and pass a disturbance along.','Small "sound particles" leave the guitar and enter your ear.','Nothing travels; your ear feels the guitar vibrate directly.']],
+ ['A speaker plays a low note and a high note at the same time. In a quiet room, which reaches you first?',['The low note','The high note','They arrive at the same time','It depends on the volume']],
+ ['A cork floats on a pond. A wave moves across the pond toward the shore. What does the cork do?',['It moves along with the wave to the shore.','It bobs up and down about the same place as the wave passes.','It sinks.','It stays completely still.']],
+ ['In a movie, a spaceship explodes in empty space and everyone hears a loud boom. Is that realistic?',['Yes, sound travels everywhere.','No, sound needs a material (medium) to travel through.','Yes, but only if the explosion is big.','No, because light travels faster.']],
+ ['Two identical waves meet so that they cancel at one spot for a moment. What happens to the waves after they pass through each other?',['Both waves are gone.','Both waves continue as they were before.','The waves bounce back.','The waves merge into a single wave.']],
+ ['Which of these can travel through empty space?',['Sound only','Light only','Both sound and light','Neither']]
+];
+function buildProbes(){
+  var host=$('#probes'),L='ABCD';
+  PROBES.forEach(function(p,i){
+    var f=document.createElement('fieldset');f.className='probe';f.style.border='0';f.style.padding='12px 0';
+    var h='<legend style="font-weight:700">'+(i+1)+'. '+p[0]+'</legend>';
+    p[1].forEach(function(o,j){h+='<label class="opt" style="font-weight:400"><input type="radio" name="pr'+i+'" value="'+L[j]+'"><span>'+L[j]+'. '+o+'</span></label>';});
+    h+='<label class="opt" style="font-weight:400"><input type="radio" name="pr'+i+'" value="Not sure"><span>Not sure</span></label>';
+    h+='<label for="pw'+i+'" style="font-weight:400">Because</label><input type="text" id="pw'+i+'">';
+    f.innerHTML=h;host.appendChild(f);
+    $$('input[name="pr'+i+'"]',f).forEach(function(r){if(S.probes[i].a===r.value)r.checked=true;r.addEventListener('change',function(){S.probes[i].a=r.value;pc();refreshDone();save();});});
+    var w=$('#pw'+i);w.value=S.probes[i].w||'';w.addEventListener('input',function(){S.probes[i].w=w.value;save();});
+  });
+  function pc(){var n=S.probes.filter(function(p){return p.a;}).length;$('#pcount').textContent=n+' of 6 answered';}
+  pc();
+}
+
+/* ---------- drawing ---------- */
+var cv=$('#cv'),g=cv.getContext('2d',{willReadFrequently:true}),COL=['#14202b','#245f9e','#b0560c','#1c7447','#a3271f'],NAMEC=['Black','Blue','Orange','Green','Red'],color=COL[0],tool='pen',stamp=null,hist=[],drawing=false,lx=0,ly=0,sx=0,sy=0,snap=null;
+function paper(){g.fillStyle='#ffffff';g.fillRect(0,0,cv.width,cv.height);}
+function push(){try{hist.push(g.getImageData(0,0,cv.width,cv.height));if(hist.length>15)hist.shift();}catch(e){}}
+function pos(e){var r=cv.getBoundingClientRect();return [(e.clientX-r.left)*cv.width/r.width,(e.clientY-r.top)*cv.height/r.height];}
+function setTool(t){tool=t;pend=null;stamp=null;$$('[data-tool]').forEach(function(b){b.setAttribute('aria-pressed',b.getAttribute('data-tool')===t?'true':'false');b.className='btn small'+(b.getAttribute('data-tool')===t?'':' ghost');});$$('[data-stamp]').forEach(function(b){b.setAttribute('aria-pressed','false');});$('#labelRow').hidden=(t!=='text');$('#cvstat').textContent='Tool: '+({pen:'pen',arrow:'arrow (drag, or click start then click end)',eraser:'eraser',text:'label (type, then click the drawing)'}[t]);}
+function setStamp(s){stamp=s;$$('[data-tool]').forEach(function(b){b.setAttribute('aria-pressed','false');b.className='btn small ghost';});$$('[data-stamp]').forEach(function(b){b.setAttribute('aria-pressed',b.getAttribute('data-stamp')===s?'true':'false');});$('#labelRow').hidden=true;$('#cvstat').textContent='Stamp: '+s+' (click the drawing to place it)';}
+$$('[data-tool]').forEach(function(b){b.addEventListener('click',function(){setTool(b.getAttribute('data-tool'));});});
+$$('[data-stamp]').forEach(function(b){b.addEventListener('click',function(){setStamp(b.getAttribute('data-stamp'));});});
+var sw=$('#sws');COL.forEach(function(c,i){var b=document.createElement('button');b.className='sw';b.style.background=c;b.setAttribute('aria-label',NAMEC[i]+' ink');b.setAttribute('aria-pressed',i===0?'true':'false');b.addEventListener('click',function(){color=c;$$('.sw').forEach(function(x){x.setAttribute('aria-pressed','false');});b.setAttribute('aria-pressed','true');});sw.appendChild(b);});
+function arrow(x0,y0,x1,y1){g.strokeStyle=color;g.fillStyle=color;g.lineWidth=3;g.lineCap='round';g.beginPath();g.moveTo(x0,y0);g.lineTo(x1,y1);g.stroke();var a=Math.atan2(y1-y0,x1-x0),L=14;g.beginPath();g.moveTo(x1,y1);g.lineTo(x1-L*Math.cos(a-0.45),y1-L*Math.sin(a-0.45));g.lineTo(x1-L*Math.cos(a+0.45),y1-L*Math.sin(a+0.45));g.closePath();g.fill();}
+function label(txt,x,y,sz){g.fillStyle=color;g.font='700 '+(sz||18)+'px sans-serif';g.textBaseline='middle';g.textAlign='center';g.fillText(txt,x,y);g.textAlign='left';}
+function drawStamp(s,x,y){
+  g.save();g.strokeStyle=color;g.fillStyle=color;g.lineWidth=3;g.lineJoin='round';g.lineCap='round';
+  if(s==='engine'){g.strokeRect(x-40,y-26,80,52);g.beginPath();g.arc(x,y,13,0,Math.PI*2);g.stroke();for(var i=0;i<6;i++){var a=i*Math.PI/3;g.beginPath();g.moveTo(x+13*Math.cos(a),y+13*Math.sin(a));g.lineTo(x+19*Math.cos(a),y+19*Math.sin(a));g.stroke();}label('engine',x,y+42,15);}
+  if(s==='headphone'){g.beginPath();g.arc(x,y,34,Math.PI,0);g.stroke();g.fillRect(x-42,y-4,14,30);g.fillRect(x+28,y-4,14,30);label('headphone',x,y+42,15);}
+  if(s==='ear'){g.beginPath();g.arc(x,y-4,24,Math.PI*0.9,Math.PI*2.2);g.stroke();g.beginPath();g.arc(x+2,y-2,11,Math.PI*0.9,Math.PI*1.9);g.stroke();g.beginPath();g.moveTo(x-20,y+4);g.quadraticCurveTo(x-14,y+30,x+4,y+28);g.stroke();label('ear',x,y+42,15);}
+  if(s==='mic'){g.beginPath();g.roundRect?g.roundRect(x-9,y-26,18,32,9):g.rect(x-9,y-26,18,32);g.stroke();g.beginPath();g.arc(x,y-2,16,0,Math.PI);g.stroke();g.beginPath();g.moveTo(x,y+14);g.lineTo(x,y+26);g.moveTo(x-10,y+26);g.lineTo(x+10,y+26);g.stroke();label('microphone',x,y+42,15);}
+  if(s==='speaker'){g.strokeRect(x-26,y-12,16,24);g.beginPath();g.moveTo(x-10,y-12);g.lineTo(x+14,y-30);g.lineTo(x+14,y+30);g.lineTo(x-10,y+12);g.closePath();g.stroke();label('speaker',x,y+42,15);}
+  if(s==='wave'){g.beginPath();for(var k=0;k<=140;k++){var px=x-70+k,py=y-Math.sin(k/140*Math.PI*4)*18;if(k===0)g.moveTo(px,py);else g.lineTo(px,py);}g.stroke();label('sound wave',x,y+34,15);}
+  g.restore();
+}
+cv.addEventListener('pointerdown',function(e){
+  e.preventDefault();var p=pos(e);
+  if(stamp){push();drawStamp(stamp,p[0],p[1]);markDrawn();return;}
+  if(tool==='text'){var t=$('#lbl').value.trim();if(!t){$('#cvstat').textContent='Type a label first, then click the drawing.';return;}push();label(t,p[0],p[1],20);markDrawn();return;}
+  if(tool==='arrow'&&pend){push();arrow(pend[0],pend[1],p[0],p[1]);pend=null;snap=null;markDrawn();$('#cvstat').textContent='Arrow added.';return;}
+  push();drawing=true;moved=false;lx=sx=p[0];ly=sy=p[1];cv.setPointerCapture(e.pointerId);
+  if(tool==='arrow'){snap=g.getImageData(0,0,cv.width,cv.height);}
+  if(tool==='pen'||tool==='eraser'){g.strokeStyle=tool==='eraser'?'#ffffff':color;g.lineWidth=tool==='eraser'?24:3.5;g.lineCap='round';g.beginPath();g.moveTo(lx,ly);g.lineTo(lx+0.1,ly+0.1);g.stroke();}
+});
+cv.addEventListener('pointermove',function(e){if(!drawing)return;var p=pos(e);if(Math.abs(p[0]-sx)+Math.abs(p[1]-sy)>8)moved=true;
+  if(tool==='arrow'){g.putImageData(snap,0,0);arrow(sx,sy,p[0],p[1]);}
+  else{g.strokeStyle=tool==='eraser'?'#ffffff':color;g.lineWidth=tool==='eraser'?24:3.5;g.lineCap='round';g.beginPath();g.moveTo(lx,ly);g.lineTo(p[0],p[1]);g.stroke();lx=p[0];ly=p[1];}});
+var pend=null,moved=false;
+function endDraw(e){if(!drawing)return;drawing=false;if(tool==='arrow'&&!moved){g.putImageData(snap,0,0);hist.pop();pend=[sx,sy];g.save();g.fillStyle=color;g.beginPath();g.arc(sx,sy,5,0,7);g.fill();g.restore();$('#cvstat').textContent='Arrow start set. Click where the arrow should end.';return;}markDrawn();}
+cv.addEventListener('pointerup',endDraw);cv.addEventListener('pointercancel',endDraw);
+function markDrawn(){S.drawn=true;refreshDone();save();}
+$('#undo').addEventListener('click',function(){var h=hist.pop();if(h){g.putImageData(h,0,0);save();}});
+var clr=false;$('#clear').addEventListener('click',function(){var b=$('#clear');if(!clr){clr=true;b.textContent='Click again to clear';setTimeout(function(){clr=false;b.textContent='Clear';},2500);return;}clr=false;b.textContent='Clear';push();paper();S.drawn=false;refreshDone();save();});
+$('#photo').addEventListener('change',function(){var f=this.files&&this.files[0];if(!f)return;var rd=new FileReader();rd.onload=function(){var im=new Image();im.onload=function(){push();paper();var r=Math.min(cv.width/im.width,cv.height/im.height);var w=im.width*r,h=im.height*r;g.drawImage(im,(cv.width-w)/2,(cv.height-h)/2,w,h);markDrawn();$('#cvstat').textContent='Photo added. You can draw on top of it.';};im.src=rd.result;};rd.readAsDataURL(f);});
+function restoreDraw(cb){paper();if(S.draw){var im=new Image();im.onload=function(){g.drawImage(im,0,0,cv.width,cv.height);cb&&cb();};im.onerror=function(){cb&&cb();};im.src=S.draw;}else{cb&&cb();}}
+
+/* ---------- completion + review ---------- */
+function items(){
+  var probesN=S.probes.filter(function(p){return p.a;}).length;
+  return [
+   ['Part A: described both sounds',3,!!(S.rp||S.rs||S.rn||S.vp||S.vs||S.vn)],
+   ['Part A: filled in the Change column',2,!!(S.c1&&S.c2)],
+   ['Part A: wrote about patterns in the table',2,!!S.q2.trim()],
+   ['Part B: Anchor Model v1 (drawing or words)',3,!!(S.drawn||S.mdesc.trim())],
+   ['Part B: best explanation and what I am unsure about',3,!!(S.q3.trim()&&S.q4.trim())],
+   ['Part C: Wave Ideas Check ('+probesN+' of 6)',4,probesN===6],
+   ['Exit ticket: two questions',5,!!(S.e1.trim()&&S.e2.trim())]
+  ];
+}
+function refreshDone(){
+  var it=items(),st={1:it[0][2],2:it[1][2]&&it[2][2],3:it[3][2]&&it[4][2],4:it[5][2],5:it[6][2]};
+  $$('.stepbtn').forEach(function(b){var j=+b.getAttribute('data-go');b.classList.toggle('is-done',!!st[j]);var base=NAMES[j];b.setAttribute('aria-label',base+(st[j]?', done':''));});
+}
+function renderCheck(){
+  var ul=$('#check');ul.innerHTML='';
+  items().forEach(function(it){var li=document.createElement('li');li.innerHTML='<span class="st '+(it[2]?'ok':'no')+'">'+(it[2]?'Done':'To do')+'</span><span style="flex:1;min-width:12rem">'+it[0]+'</span><button class="btn ghost small" data-go="'+it[1]+'">Go to this part</button>';ul.appendChild(li);});
+  try{$('#pimg').src=cv.toDataURL('image/png');}catch(e){}
+}
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+function labelOf(k,v){return v?v:'(no answer)';}
+function buildText(){
+  var L='ABCD',o=[];
+  o.push('WORKSHEET 1: THE QUIET CABIN (interactive lab)');o.push('Name: '+(S.name||'(no name)'));o.push('Guiding question: How can headphones erase a jet\'s rumble but hardly touch the voice next to you?');o.push('');
+  o.push('PART A. OBSERVE');
+  o.push('Sample data: Engine rumble about 100 Hz, OFF 68 dB, ON 52 dB, change '+labelOf(0,S.c1)+'. Voices about 3,000 Hz, OFF 66 dB, ON 65 dB, change '+labelOf(0,S.c2)+'.');
+  o.push('Q1. Engine rumble: pitch '+labelOf(0,S.rp)+'; pattern '+labelOf(0,S.rs)+'; notes: '+labelOf(0,S.rn));
+  o.push('Q1. Voices: pitch '+labelOf(0,S.vp)+'; pattern '+labelOf(0,S.vs)+'; notes: '+labelOf(0,S.vn));
+  o.push('Q2. Patterns I notice: '+labelOf(0,S.q2));o.push('');
+  o.push('PART B. ANCHOR MODEL v1');o.push('Drawing: '+(S.drawn?'included (see the .html or .png file)':'(none)'));o.push('Model in words: '+labelOf(0,S.mdesc));
+  o.push('Q3. My best explanation so far: '+labelOf(0,S.q3));o.push('Q4. What I am unsure about: '+labelOf(0,S.q4));o.push('');
+  o.push('PART C. WAVE IDEAS CHECK (ungraded)');
+  PROBES.forEach(function(p,i){var a=S.probes[i].a,txt=a?(a==='Not sure'?'Not sure':a+'. '+p[1][L.indexOf(a)]):'(no answer)';o.push((i+1)+'. '+p[0]);o.push('   Answer: '+txt);o.push('   Because: '+labelOf(0,S.probes[i].w));});
+  o.push('');o.push('EXIT TICKET');o.push('1. '+labelOf(0,S.e1));o.push('2. '+labelOf(0,S.e2));o.push('');
+  o.push('CHECK-IN');o.push('I can describe patterns and draw a first model: '+labelOf(0,S.got));o.push('Feeling: '+labelOf(0,S.feel));o.push('Anything in the way / what would help: '+labelOf(0,S.barrier));
+  return o.join('\n');
+}
+function buildHtml(){
+  var L='ABCD',img='';try{img=S.drawn?cv.toDataURL('image/png'):'';}catch(e){}
+  function p(l,v){return '<p><b>'+esc(l)+'</b> '+esc(v||'(no answer)')+'</p>';}
+  var pr=PROBES.map(function(q,i){var a=S.probes[i].a,t=a?(a==='Not sure'?'Not sure':a+'. '+q[1][L.indexOf(a)]):'(no answer)';return '<li><p>'+esc(q[0])+'</p><p><b>Answer:</b> '+esc(t)+'<br><b>Because:</b> '+esc(S.probes[i].w||'(no answer)')+'</p></li>';}).join('');
+  return '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Worksheet 1: The Quiet Cabin ('+esc(S.name||'student')+')</title><style>body{font:16px/1.5 Arial,sans-serif;max-width:46rem;margin:2rem auto;padding:0 1rem;color:#14202b}h1{font-size:1.6rem}h2{font-size:1.2rem;border-bottom:2px solid #14202b;margin-top:2rem}table{border-collapse:collapse}td,th{border:1px solid #888;padding:6px 10px}img{max-width:100%;border:1px solid #888}</style></head><body>'+
+   '<h1>Worksheet 1: The Quiet Cabin</h1><p><b>Name:</b> '+esc(S.name||'(no name)')+'</p><p><b>Guiding question:</b> How can headphones erase a jet\'s rumble but hardly touch the voice next to you?</p>'+
+   '<h2>Part A. Observe</h2><table><tr><th>Sound</th><th>Frequency</th><th>OFF (dB)</th><th>ON (dB)</th><th>Change (dB)</th></tr><tr><td>Engine rumble</td><td>about 100 Hz</td><td>68</td><td>52</td><td>'+esc(S.c1)+'</td></tr><tr><td>Voices</td><td>about 3,000 Hz</td><td>66</td><td>65</td><td>'+esc(S.c2)+'</td></tr></table>'+
+   p('Q1. Engine rumble:','pitch: '+(S.rp||'-')+'; pattern: '+(S.rs||'-')+'; notes: '+(S.rn||'-'))+p('Q1. Voices:','pitch: '+(S.vp||'-')+'; pattern: '+(S.vs||'-')+'; notes: '+(S.vn||'-'))+p('Q2. Patterns I notice:',S.q2)+
+   '<h2>Part B. Anchor Model v1</h2>'+(img?'<p><img src="'+img+'" alt="Student drawing of Anchor Model v1"></p>':'<p>(no drawing)</p>')+p('Model in words:',S.mdesc)+p('Q3. My best explanation so far:',S.q3)+p('Q4. What I am unsure about:',S.q4)+
+   '<h2>Part C. Wave Ideas Check (ungraded)</h2><ol>'+pr+'</ol><h2>Exit ticket</h2><ol><li>'+esc(S.e1||'(no answer)')+'</li><li>'+esc(S.e2||'(no answer)')+'</li></ol>'+
+   '<h2>Check-in</h2>'+p('I can describe patterns and draw a first model:',S.got)+p('Feeling:',S.feel)+p('Anything in the way / what would help:',S.barrier)+'</body></html>';
+}
+var dl=null;
+function fname(ext){var n=(S.name||'student').trim().replace(/[^A-Za-z0-9]+/g,'-').replace(/^-|-$/g,'')||'student';return 'Worksheet1-Quiet-Cabin-'+n+'.'+ext;}
+function fb(msg){$('#savefb').textContent=msg;}
+function saveFile(name,data,label){
+  if(!dl){fb('Saving files is not available here. Use "Copy text" instead.');return;}
+  dl.save({filename:name,data:data}).then(function(){fb(label+' saved.');}).catch(function(e){fb(e&&e.code==='declined'?'Save cancelled.':'Could not save here. Use "Copy text" instead.');});
+}
+$('#saveHtml').addEventListener('click',function(){saveFile(fname('html'),buildHtml(),'Worksheet');});
+$('#saveTxt').addEventListener('click',function(){saveFile(fname('txt'),buildText(),'Text file');});
+$('#savePng').addEventListener('click',function(){cv.toBlob(function(b){if(b)saveFile(fname('png').replace('Worksheet1-Quiet-Cabin','Anchor-Model-v1'),b,'Drawing');});});
+$('#copyTxt').addEventListener('click',function(){
+  var t=buildText();
+  function fallback(){var bx=$('#cpbox');$('#copyFallback').hidden=false;bx.value=t;bx.focus();bx.select();fb('Select all and copy the text in the box.');}
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(function(){fb('Copied.');},fallback);}else{fallback();}
+});
+var rs=false;$('#reset').addEventListener('click',function(){var b=$('#reset');if(!rs){rs=true;b.textContent='Click again to erase all answers';$('#resetfb').textContent='This cannot be undone.';setTimeout(function(){rs=false;b.textContent='Start over';$('#resetfb').textContent='';},3500);return;}try{localStorage.removeItem(KEY);}catch(e){}location.reload();});
+
+/* ---------- init ---------- */
+load();setSize(S.size||1);bind();buildProbes();
+restoreDraw(function(){refreshDone();});
+go(Math.min(6,Math.max(0,S.step||0)),false);
+function blobSaver(){return {save:function(r){return new Promise(function(res,rej){try{var b=(r.data instanceof Blob)?r.data:new Blob([r.data],{type:/\.html$/.test(r.filename)?'text/html':'text/plain'});var u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download=r.filename;document.body.appendChild(a);a.click();setTimeout(function(){document.body.removeChild(a);URL.revokeObjectURL(u);},1500);res({status:'saved'});}catch(e){rej({code:'unavailable'});}});}};}
+if(window.claude&&window.claude.use){window.claude.use('downloads').then(function(d){dl=d||blobSaver();}).catch(function(){dl=blobSaver();});}
+else{dl=blobSaver();}
+})();
+</script>
+
+</body></html>
